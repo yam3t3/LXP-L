@@ -1,0 +1,49 @@
+name: Linea User Points Logs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run every midnight
+  workflow_dispatch:  # Enable manual workflow run
+
+jobs:
+  log_user_points:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Log data from API
+      run: |
+        # Define log file and create it with headers if it doesn't exist
+        log_csv_filename="log.csv"
+        if [ ! -f "$log_csv_filename" ]; then
+          echo "Date,Rank_XP,User_Address,XP,ALP,PLP,EP,RP,VP,BP,EA_Flag" > "$log_csv_filename"
+        fi
+
+        # Fetch and extract data from the API
+        data=$(curl -s "https://kx58j6x5me.execute-api.us-east-1.amazonaws.com/linea/getUserPointsSearch?user=0x9e47fbb2a2a27b3b02e4a63b3ef5a3dc863c0223" | jq '.[0]')
+        
+        # Extract individual fields
+        date=$(date +'%Y-%m-%d_%H:%M')
+        rank_xp=$(echo "$data" | jq -r '.rank_xp')
+        user_address=$(echo "$data" | jq -r '.user_address')
+        xp=$(echo "$data" | jq -r '.xp')
+        alp=$(echo "$data" | jq -r '.alp')
+        plp=$(echo "$data" | jq -r '.plp')
+        ep=$(echo "$data" | jq -r '.ep')
+        rp=$(echo "$data" | jq -r '.rp')
+        vp=$(echo "$data" | jq -r '.vp')
+        bp=$(echo "$data" | jq -r '.bp')
+        ea_flag=$(echo "$data" | jq -r '.ea_flag')
+
+        # Append the data to the log CSV file
+        echo "$date,$rank_xp,$user_address,$xp,$alp,$plp,$ep,$rp,$vp,$bp,$ea_flag" >> "$log_csv_filename"
+
+    - name: Commit and push log
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add log.csv
+        git commit -m "Log update for $(date +'%Y-%m-%d %H:%M')"
+        git push
