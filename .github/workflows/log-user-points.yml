@@ -22,7 +22,7 @@ jobs:
         fi
 
         # Fetch and extract data from the API
-        data=$(curl -s "https://kx58j6x5me.execute-api.us-east-1.amazonaws.com/linea/getUserPointsSearch?user=0x9e47fbb2a2a27b3b02e4a63b3ef5a3dc863c0223" | jq '.[0]')
+        data=$(curl -s "https://kx58j6x5me.execute-api.us-east-1.amazonaws.com/linea/getUserPointsSearch?user=0x38b3349d3c1454754f12848621fe590f2163c427" | jq '.[0]')
         
         # Extract individual fields
         date=$(date +'%Y-%m-%d_%H:%M')
